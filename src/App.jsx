@@ -8,6 +8,8 @@ import {
   Toolbar,
   Fab,
 } from '@mui/material';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { setFilterValue, getFilterValue } from 'redux/filters/filtersSlice';
@@ -44,7 +46,6 @@ function App() {
           <SearchContact changeFilter={changeFilter} value={filterValue} />
         </Toolbar>
       </AppBar>
-
       <main>
         <section>
           {isFetching && <LinearProgress />}
@@ -66,6 +67,7 @@ function App() {
           />
         </section>
       </main>
+      <ToastContainer position="top-center" autoClose={3000} />
     </Container>
   );
 }

@@ -3,6 +3,7 @@ import {
   SearchIconWrapper,
   StyledInputBase,
 } from './SearchContact.styled';
+import PropTypes from 'prop-types';
 import SearchIcon from '@mui/icons-material/Search';
 function SearchContact({ changeFilter, value }) {
   return (
@@ -19,5 +20,9 @@ function SearchContact({ changeFilter, value }) {
     </Search>
   );
 }
+SearchContact.propTypes = {
+  changeFilter: PropTypes.func,
+  value: PropTypes.string,
+};
 
 export default SearchContact;

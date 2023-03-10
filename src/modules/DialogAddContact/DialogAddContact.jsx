@@ -1,30 +1,25 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import styles from './ContactForm.module.scss';
 import {
   Button,
   TextField,
   Dialog,
-  DialogActions,
   DialogTitle,
   DialogContent,
   Box,
-  Snackbar,
-  Alert,
 } from '@mui/material';
+import { Form } from './DialogAddContact.styled';
 
 import { useAddContactsMutation } from 'redux/api/contactsApi/contactsApi';
+import { toast } from 'react-toastify';
 function DialogAddContact({ contacts, isOpen, onClose }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [isDuplicate, setIsDuplicate] = useState(false);
 
-  const [addContacts, { isLoading: isPosting, data }] =
-    useAddContactsMutation();
+  const [addContacts, { isLoading: isPosting }] = useAddContactsMutation();
   const resetState = () => {
     setName('');
     setPhone('');
-    setIsDuplicate(false);
     onClose();
   };
 
@@ -32,19 +27,24 @@ function DialogAddContact({ contacts, isOpen, onClose }) {
     return contacts.find(({ name }) => name === newName);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async e => {
+    e.preventDefault();
     if (checkingDuplicate(name)) {
-      setIsDuplicate(true);
+      toast.error(`Contact ${name} already exists`);
       return;
     }
-    addContacts({
+    const response = await addContacts({
       phone,
       name,
     });
 
-    if (!isPosting) {
-      resetState();
+    if (response.error) {
+      toast.error('Oops! Something went wrong');
+      return;
     }
+
+    toast.info('New contact added');
+    onClose();
   };
 
   const handleChange = e => {
@@ -66,7 +66,7 @@ function DialogAddContact({ contacts, isOpen, onClose }) {
     <Dialog open={isOpen} onClose={resetState} fullWidth={true}>
       <DialogTitle>Add new contact</DialogTitle>
       <DialogContent>
-        <Box flexDirection={'column'} display={'flex'} gap={2}>
+        <Form onSubmit={handleSubmit}>
           <TextField
             label="Name"
             variant="standard"
@@ -89,7 +89,7 @@ function DialogAddContact({ contacts, isOpen, onClose }) {
             onChange={handleChange}
             inputProps={{
               pattern:
-                '+?d{1,4}?[-.s]?(?d{1,3}?)?[-.s]?d{1,4}[-.s]?d{1,4}[-.s]?d{1,9}',
+                '\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}',
               title:
                 'Phone number must be digits and can contain spaces, dashes, parentheses and can start with +',
             }}
@@ -98,32 +98,31 @@ function DialogAddContact({ contacts, isOpen, onClose }) {
             title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
             required
           />
-        </Box>
+
+          <Box justifyContent="right" display="flex" gap="20px">
+            <Button disabled={!isDisableAdd} type="submit">
+              Add
+            </Button>
+            <Button disabled={isPosting} onClick={resetState}>
+              Cancel
+            </Button>
+          </Box>
+        </Form>
       </DialogContent>
-      <DialogActions>
-        <Button disabled={!isDisableAdd} onClick={handleSubmit}>
-          Add
-        </Button>
-        <Button disabled={isPosting} onClick={resetState}>
-          Cancel
-        </Button>
-      </DialogActions>
-      <Snackbar
-        open={isDuplicate}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        autoHideDuration={6000}
-        onClose={() => setIsDuplicate(false)}
-      >
-        <Alert severity="warning" sx={{ width: '100%' }}>
-          {`A contact with this ${name} already exists`}
-        </Alert>
-      </Snackbar>
     </Dialog>
   );
 }
 
 DialogAddContact.propTypes = {
-  onSubmit: PropTypes.func,
+  onClose: PropTypes.func,
+  contacts: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string,
+      phone: PropTypes.string,
+    })
+  ),
+  isOpen: PropTypes.bool,
 };
 
 export default DialogAddContact;

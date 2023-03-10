@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { List, ListItem, ListItemText, IconButton } from '@mui/material';
+import { List } from '@mui/material';
 import ContactsItem from './ContactsItem/ContactsItem';
 import { useSelector } from 'react-redux';
 import { getFilterValue } from 'redux/filters/filtersSlice';
